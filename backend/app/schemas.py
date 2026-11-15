@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Any, Generic, TypeVar
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 T = TypeVar("T")
 
@@ -22,10 +22,21 @@ class ActionResult(BaseModel):
 
 
 class EntryPayload(BaseModel):
-    """登记或修改一条业务记录时提交的字段集合。"""
+    """登记或修改一条业务记录时提交的字段集合。
+
+    动作名允许放在 values.action 或顶层 action，两种写法在这里归一，
+    各模块路由只用读 values，不再各自兼容。
+    """
 
     values: dict[str, Any] = Field(default_factory=dict)
     remark: str | None = None
+    action: str | None = None
+
+    @model_validator(mode="after")
+    def merge_action_into_values(self) -> "EntryPayload":
+        if self.action and "action" not in self.values:
+            self.values["action"] = self.action
+        return self
 
 
 
@@ -148,6 +159,37 @@ class CaptchaEntry(BaseModel):
     field_5: str | None = None  # 降级策略
     field_6: str | None = None  # 手动打码开关
     field_7: str | None = None  # 打码等待队列
+
+class CaptcharesultEntry(BaseModel):
+    """验证码识别结果明细结构。"""
+
+    field_0: str | None = None  # 结果编号
+    field_1: str | None = None  # 策略编号
+    field_2: str | None = None  # 验证码类型
+    field_3: str | None = None  # 识别服务商
+    field_4: str | None = None  # 实例编号
+    field_5: str | None = None  # 目标站点
+    field_6: str | None = None  # 识别结果
+    field_7: str | None = None  # 连续失败数
+    field_8: str | None = None  # 失败原因
+    field_9: str | None = None  # 上报单号
+    field_10: str | None = None  # 上报时间
+    field_11: str | None = None  # 关联分配
+    field_12: str | None = None  # 处置说明
+
+class ProxyassignEntry(BaseModel):
+    """代理分配结果明细结构。"""
+
+    field_0: str | None = None  # 分配编号
+    field_1: str | None = None  # 实例编号
+    field_2: str | None = None  # 目标站点
+    field_3: str | None = None  # 出站地域
+    field_4: str | None = None  # 分配来源
+    field_5: str | None = None  # 存活检测时间
+    field_6: str | None = None  # 隔离原因
+    field_7: str | None = None  # 隔离时间
+    field_8: str | None = None  # 隔离到期时间
+    field_9: str | None = None  # 解除原因
 
 class MonitorEntry(BaseModel):
     """监控面板明细结构。"""

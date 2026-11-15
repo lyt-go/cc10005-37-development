@@ -75,8 +75,10 @@ export default function CaptchaView() {
         method: 'POST',
         body: JSON.stringify({ action }),
       })
-      if (!response.ok) {
-        throw new Error('验证码处理动作未生效，请稍后重试')
+      const payload = await response.json()
+      if (!response.ok || !payload.ok) {
+        setErrorMessage(payload.message ?? '验证码处理动作未生效，请稍后重试')
+        return
       }
       await reload()
     } catch (error) {

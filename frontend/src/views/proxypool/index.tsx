@@ -75,8 +75,10 @@ export default function ProxypoolView() {
         method: 'POST',
         body: JSON.stringify({ action }),
       })
-      if (!response.ok) {
-        throw new Error('代理池管理动作未生效，请稍后重试')
+      const payload = await response.json()
+      if (!response.ok || !payload.ok) {
+        setErrorMessage(payload.message ?? '代理池管理动作未生效，请稍后重试')
+        return
       }
       await reload()
     } catch (error) {
